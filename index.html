@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>備忘録</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2em auto; }
+    input, button { padding: 0.5em; }
+    ul { padding-left: 1em; }
+    li { margin-bottom: 0.3em; }
+  </style>
+</head>
+<body>
+  <h1>備忘録</h1>
+  <input id="memoInput" type="text" placeholder="メモを入力" />
+  <button onclick="addMemo()">追加</button>
+  <ul id="memoList"></ul>
+
+  <script>
+    const input = document.getElementById("memoInput");
+    const list = document.getElementById("memoList");
+
+    function addMemo() {
+      const text = input.value.trim();
+      if (!text) return;
+      const li = document.createElement("li");
+      li.textContent = text;
+      list.appendChild(li);
+      input.value = "";
+      saveMemos();
+    }
+
+    function saveMemos() {
+      const memos = Array.from(list.children).map(li => li.textContent);
+      localStorage.setItem("memos", JSON.stringify(memos));
+    }
+
+    function loadMemos() {
+      const memos = JSON.parse(localStorage.getItem("memos") || "[]");
+      memos.forEach(m => {
+        const li = document.createElement("li");
+        li.textContent = m;
+        list.appendChild(li);
+      });
+    }
+
+    loadMemos();
+  </script>
+</body>
+</html>
