@@ -5,9 +5,20 @@
   <title>備忘録</title>
   <style>
     body { font-family: sans-serif; max-width: 600px; margin: 2em auto; }
-    input, button { padding: 0.5em; }
+    input, button { padding: 0.5em; margin-top: 0.5em; }
     ul { padding-left: 1em; }
-    li { margin-bottom: 0.3em; }
+    li { margin-bottom: 0.3em; display: flex; justify-content: space-between; align-items: center; }
+    .memo-text { flex: 1; }
+    .date { font-size: 0.8em; color: #666; margin-left: 0.5em; }
+    .delete-button {
+      background: #f55;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      padding: 0.3em 0.6em;
+      margin-left: 1em;
+    }
   </style>
 </head>
 <body>
@@ -20,28 +31,55 @@
     const input = document.getElementById("memoInput");
     const list = document.getElementById("memoList");
 
-    function addMemo() {
-      const text = input.value.trim();
-      if (!text) return;
+    function getFormattedDate() {
+      const now = new Date();
+      return `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+    }
+
+    function addMemo(text = null, date = null) {
+      const memoText = text || input.value.trim();
+      if (!memoText) return;
+
       const li = document.createElement("li");
-      li.textContent = text;
+
+      const spanText = document.createElement("span");
+      spanText.className = "memo-text";
+      spanText.textContent = memoText;
+
+      const spanDate = document.createElement("span");
+      spanDate.className = "date";
+      spanDate.textContent = date || getFormattedDate();
+
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "×";
+      delBtn.className = "delete-button";
+      delBtn.onclick = () => {
+        li.remove();
+        saveMemos();
+      };
+
+      li.appendChild(spanText);
+      li.appendChild(spanDate);
+      li.appendChild(delBtn);
       list.appendChild(li);
-      input.value = "";
+
+      if (!text) input.value = "";
       saveMemos();
     }
 
     function saveMemos() {
-      const memos = Array.from(list.children).map(li => li.textContent);
+      const memos = Array.from(list.children).map(li => {
+        return {
+          text: li.querySelector(".memo-text").textContent,
+          date: li.querySelector(".date").textContent
+        };
+      });
       localStorage.setItem("memos", JSON.stringify(memos));
     }
 
     function loadMemos() {
       const memos = JSON.parse(localStorage.getItem("memos") || "[]");
-      memos.forEach(m => {
-        const li = document.createElement("li");
-        li.textContent = m;
-        list.appendChild(li);
-      });
+      memos.forEach(m => addMemo(m.text, m.date));
     }
 
     loadMemos();
